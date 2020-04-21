@@ -26,7 +26,7 @@ func getCommitURL(repoName string) string {
 	return reposURL + repoName + "/commits"
 }
 
-func getInfo(url string) []byte {
+func getInfo(url string) {
 	var bearer = "Bearer " + utils.GithubToken
 	req, err := http.NewRequest("GET", url, nil)
 	req.Header.Add("Authorization", bearer)
@@ -37,12 +37,23 @@ func getInfo(url string) []byte {
 	}
 
 	body, _ := ioutil.ReadAll(resp.Body)
-	return []byte(body)
+
+	utils.RawInfo <- body
+	// return body
 }
 
 func getRepos() []utils.RepoStruct {
+	ok := false
 	var repos []utils.RepoStruct
-	rawRepos := getInfo(userURL)
+	var rawRepos []byte
+	go getInfo(userURL)
+	for {
+		rawRepos, ok = <-utils.RawInfo
+		if !ok {
+			continue
+		}
+		break
+	}
 	json.Unmarshal(rawRepos, &repos)
 	return repos
 }

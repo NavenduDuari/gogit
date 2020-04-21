@@ -9,13 +9,23 @@ import (
 func getCommit() []utils.CommitStruct {
 	var commitStructArr []utils.CommitStruct
 	repos := getRepos()
-	for _, repo := range repos {
+	go func() {
+		for _, repo := range repos {
+			commitURL := getCommitURL(repo.Name)
+			go getInfo(commitURL)
+		}
+	}()
+
+	for i := 1; i <= len(repos); i++ {
+		rawCommitInfo, ok := <-utils.RawInfo
+		if !ok {
+			continue
+		}
 		var commitStruct utils.CommitStruct
-		commitURL := getCommitURL(repo.Name)
-		rawCommitInfo := getInfo(commitURL)
 		json.Unmarshal([]byte(rawCommitInfo), &commitStruct)
 		commitStructArr = append(commitStructArr, commitStruct)
 	}
+
 	return commitStructArr
 }
 
@@ -25,5 +35,6 @@ func GetCommitCount() int {
 	for _, commitStruct := range commitStructArr {
 		totalCommit += len(commitStruct)
 	}
+	// utils.GetCommit <- totalCommit
 	return totalCommit
 }

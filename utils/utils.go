@@ -24,3 +24,12 @@ type CommitStruct []CommitBodystruct
 type CommitBodystruct struct {
 	SHA string `json:"sha"`
 }
+
+var RawInfo = make(chan []byte)
+
+// var GetLOC = make(chan int64)
+// var GetLang = make(chan []LanguageWithPercentageStruct)
+// var GetCommit = make(chan int)
+// var LocDone = make(chan bool)
+// var LangDone = make(chan bool)
+// var CommitDone = make(chan bool)

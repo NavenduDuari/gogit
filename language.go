@@ -14,13 +14,23 @@ var (
 func getLanguages() []utils.LanguageWithByteMap {
 	var languages []utils.LanguageWithByteMap
 	repos := getRepos()
-	for _, repo := range repos {
+	go func() {
+		for _, repo := range repos {
+			languagesURL := getLanguagesURL(repo.Name)
+			go getInfo(languagesURL)
+		}
+	}()
+
+	for i := 1; i <= len(repos); i++ {
+		rawLang, ok := <-utils.RawInfo
+		if !ok {
+			continue
+		}
 		var lang utils.LanguageWithByteMap
-		languagesURL := getLanguagesURL(repo.Name)
-		rawLang := getInfo(languagesURL)
 		json.Unmarshal([]byte(rawLang), &lang)
 		languages = append(languages, lang)
 	}
+
 	return languages
 }
 
@@ -71,5 +81,6 @@ func GetLanguagePercentage() []utils.LanguageWithPercentageStruct {
 				Percentage: (languageWithByteStruct.ByteCount / totalByteCount * 100),
 			})
 	}
+	// utils.GetLang <- languageWithPercentageStructArr
 	return languageWithPercentageStructArr
 }

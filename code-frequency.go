@@ -9,10 +9,20 @@ import (
 func getCodeFrequency() []utils.CodeFreqStruct {
 	repos := getRepos()
 	var codeFreqs []utils.CodeFreqStruct
-	for _, repo := range repos {
+	go func() {
+		for _, repo := range repos {
+			codeFrequencyURL := getCodeFrequencyURL(repo.Name)
+			go getInfo(codeFrequencyURL)
+
+		}
+	}()
+
+	for i := 1; i <= len(repos); i++ {
+		rawCodeFreq, ok := <-utils.RawInfo
+		if !ok {
+			continue
+		}
 		var codeFreq utils.CodeFreqStruct
-		codeFrequencyURL := getCodeFrequencyURL(repo.Name)
-		rawCodeFreq := getInfo(codeFrequencyURL)
 		json.Unmarshal([]byte(rawCodeFreq), &codeFreq)
 		codeFreqs = append(codeFreqs, codeFreq)
 	}
@@ -24,8 +34,12 @@ func GetLOC() int64 {
 	codeFreqs := getCodeFrequency()
 	for _, codeFreq := range codeFreqs {
 		for _, weeklyArr := range codeFreq {
+			if len(weeklyArr) == 0 {
+				continue
+			}
 			totalLOC = totalLOC + weeklyArr[1] + weeklyArr[2]
 		}
 	}
+	// utils.GetLOC <- totalLOC
 	return totalLOC
 }
