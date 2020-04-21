@@ -10,20 +10,23 @@ import (
 )
 
 var (
-	reposURL = "https://api.github.com/repos/NavenduDuari/"
-	userURL  = "https://api.github.com/users/NavenduDuari/repos"
+	reposBaseURL = "https://api.github.com/repos/"
+	userBaseURL  = "https://api.github.com/users/"
 )
 
-func getCodeFrequencyURL(repoName string) string {
-	return reposURL + repoName + "/stats/code_frequency"
+func getCodeFrequencyURL(userName, repoName string) string {
+	return reposBaseURL + userName + "/" + repoName + "/stats/code_frequency"
 }
 
-func getLanguagesURL(repoName string) string {
-	return reposURL + repoName + "/languages"
+func getLanguagesURL(userName, repoName string) string {
+	return reposBaseURL + userName + "/" + repoName + "/languages"
 }
 
-func getCommitURL(repoName string) string {
-	return reposURL + repoName + "/commits"
+func getCommitURL(userName, repoName string) string {
+	return reposBaseURL + userName + "/" + repoName + "/commits"
+}
+func getReposURL(userName string) string {
+	return userBaseURL + userName + "/repos"
 }
 
 func getInfo(url string) {
@@ -42,11 +45,11 @@ func getInfo(url string) {
 	// return body
 }
 
-func getRepos() []utils.RepoStruct {
+func getRepos(userName string) []utils.RepoStruct {
 	ok := false
 	var repos []utils.RepoStruct
 	var rawRepos []byte
-	go getInfo(userURL)
+	go getInfo(getReposURL(userName))
 	for {
 		rawRepos, ok = <-utils.RawInfo
 		if !ok {

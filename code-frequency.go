@@ -2,16 +2,18 @@ package gogit
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/NavenduDuari/gogit/utils"
 )
 
-func getCodeFrequency() []utils.CodeFreqStruct {
-	repos := getRepos()
+func getCodeFrequency(userName string) []utils.CodeFreqStruct {
+	repos := getRepos(userName)
+	fmt.Println("Repos => ", len(repos))
 	var codeFreqs []utils.CodeFreqStruct
 	go func() {
 		for _, repo := range repos {
-			codeFrequencyURL := getCodeFrequencyURL(repo.Name)
+			codeFrequencyURL := getCodeFrequencyURL(userName, repo.Name)
 			go getInfo(codeFrequencyURL)
 
 		}
@@ -29,9 +31,9 @@ func getCodeFrequency() []utils.CodeFreqStruct {
 	return codeFreqs
 }
 
-func GetLOC() int64 {
+func GetLOC(userName string) int64 {
 	var totalLOC int64
-	codeFreqs := getCodeFrequency()
+	codeFreqs := getCodeFrequency(userName)
 	for _, codeFreq := range codeFreqs {
 		for _, weeklyArr := range codeFreq {
 			if len(weeklyArr) == 0 {

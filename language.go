@@ -2,21 +2,19 @@ package gogit
 
 import (
 	"encoding/json"
+	"sort"
 
 	"github.com/NavenduDuari/gogit/utils"
 )
 
-var (
-	totalByteCount            float64
-	languageWithByteStructArr []*utils.LanguageWithByteStruct
-)
+var ()
 
-func getLanguages() []utils.LanguageWithByteMap {
+func getLanguages(userName string) []utils.LanguageWithByteMap {
 	var languages []utils.LanguageWithByteMap
-	repos := getRepos()
+	repos := getRepos(userName)
 	go func() {
 		for _, repo := range repos {
-			languagesURL := getLanguagesURL(repo.Name)
+			languagesURL := getLanguagesURL(userName, repo.Name)
 			go getInfo(languagesURL)
 		}
 	}()
@@ -34,8 +32,10 @@ func getLanguages() []utils.LanguageWithByteMap {
 	return languages
 }
 
-func calculateLanguageByte() []*utils.LanguageWithByteStruct {
-	languageWithByteMapArr := getLanguages()
+func calculateLanguageByte(userName string) ([]*utils.LanguageWithByteStruct, float64) {
+	var totalByteCount float64
+	var languageWithByteStructArr []*utils.LanguageWithByteStruct
+	languageWithByteMapArr := getLanguages(userName)
 	for _, languageWithByteMap := range languageWithByteMapArr {
 		for lang, byteCount := range languageWithByteMap {
 			isUpdated := false
@@ -67,13 +67,13 @@ func calculateLanguageByte() []*utils.LanguageWithByteStruct {
 		}
 	}
 
-	return languageWithByteStructArr
+	return languageWithByteStructArr, totalByteCount
 }
 
-func GetLanguagePercentage() []utils.LanguageWithPercentageStruct {
+func GetLanguagePercentage(userName string) []utils.LanguageWithPercentageStruct {
 	var languageWithPercentageStructArr []utils.LanguageWithPercentageStruct
 
-	languageWithByteStructArr := calculateLanguageByte()
+	languageWithByteStructArr, totalByteCount := calculateLanguageByte(userName)
 	for _, languageWithByteStruct := range languageWithByteStructArr {
 		languageWithPercentageStructArr = append(languageWithPercentageStructArr,
 			utils.LanguageWithPercentageStruct{
@@ -81,6 +81,10 @@ func GetLanguagePercentage() []utils.LanguageWithPercentageStruct {
 				Percentage: (languageWithByteStruct.ByteCount / totalByteCount * 100),
 			})
 	}
+
+	sort.SliceStable(languageWithPercentageStructArr, func(i, j int) bool {
+		return languageWithPercentageStructArr[i].Percentage > languageWithPercentageStructArr[j].Percentage
+	})
 	// utils.GetLang <- languageWithPercentageStructArr
 	return languageWithPercentageStructArr
 }

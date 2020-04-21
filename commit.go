@@ -6,12 +6,12 @@ import (
 	"github.com/NavenduDuari/gogit/utils"
 )
 
-func getCommit() []utils.CommitStruct {
+func getCommit(userName string) []utils.CommitStruct {
 	var commitStructArr []utils.CommitStruct
-	repos := getRepos()
+	repos := getRepos(userName)
 	go func() {
 		for _, repo := range repos {
-			commitURL := getCommitURL(repo.Name)
+			commitURL := getCommitURL(userName, repo.Name)
 			go getInfo(commitURL)
 		}
 	}()
@@ -29,9 +29,9 @@ func getCommit() []utils.CommitStruct {
 	return commitStructArr
 }
 
-func GetCommitCount() int {
+func GetCommitCount(userName string) int {
 	var totalCommit int
-	commitStructArr := getCommit()
+	commitStructArr := getCommit(userName)
 	for _, commitStruct := range commitStructArr {
 		totalCommit += len(commitStruct)
 	}

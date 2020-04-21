@@ -2,16 +2,34 @@ package main
 
 import (
 	"fmt"
+	"html"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/NavenduDuari/gogit"
 )
 
 func main() {
+	userName := os.Args[1:][0]
 	fmt.Println(time.Now())
-	fmt.Println("LOC => ", gogit.GetLOC())
-	fmt.Println("Commit => ", gogit.GetCommitCount())
-	fmt.Println("Languages => ", gogit.GetLanguagePercentage())
+
+	emojiFingure := html.UnescapeString("&#" + strconv.Itoa(128073) + ";")
+	emojiAvatar := html.UnescapeString("&#" + strconv.Itoa(128100) + ";")
+	var langResp = emojiFingure + ` Languages(%) => `
+	langauges := gogit.GetLanguagePercentage(userName)
+	for _, lang := range langauges {
+		langResp += fmt.Sprintf("\n\t\t\t\t%s -- *%.2f*", lang.Language, lang.Percentage)
+	}
+	locResp := fmt.Sprintf("%s Total LOC => *%d* ", emojiFingure, gogit.GetLOC(userName))
+	commitResp := fmt.Sprintf("%s Total Commits => *%d* ", emojiFingure, gogit.GetCommitCount(userName))
+	response := `
+	` + emojiAvatar + ` *` + userName + `*
+	-----------------------------------------------
+	` + locResp + `
+	` + commitResp + `
+	` + langResp
+	fmt.Println(response)
 	fmt.Println(time.Now())
 }
 
